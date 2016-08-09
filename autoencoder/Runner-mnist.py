@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 import datetime
 
-mnist = input_data.read_data_sets('../minist', one_hot = True)
+mnist = input_data.read_data_sets('../mnist', one_hot = True)
 
 def standard_scale(X_train, X_test):
     preprocessor = prep.StandardScaler().fit(X_train)
@@ -28,7 +28,7 @@ n_samples = int(mnist.train.num_examples)
 training_epochs = 20
 batch_size = 128
 display_step = 1
-device = '/gpu:1'
+device = '/gpu:3'
 
 with tf.device(device):
     autoencoder = Autoencoder(device = device, n_input = 784,

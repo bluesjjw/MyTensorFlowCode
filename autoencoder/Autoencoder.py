@@ -1,6 +1,8 @@
 import tensorflow as tf
 import numpy as np
-import Utils
+import sys
+sys.path.append("..")
+from utils import Utils
 
 class Autoencoder(object):
 
