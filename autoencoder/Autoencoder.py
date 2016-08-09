@@ -8,10 +8,10 @@ class Autoencoder(object):
         self.n_input = n_input
         self.n_hidden = n_hidden
         self.transfer = transfer_function
+        self.device = device
 
-        with tf.device(device):
-                network_weights = self._initialize_weights()
-                self.weights = network_weights
+        network_weights = self._initialize_weights()
+        self.weights = network_weights
 
         # model
         self.x = tf.placeholder(tf.float32, [None, self.n_input])

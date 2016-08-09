@@ -8,6 +8,8 @@ from Autoencoder import Autoencoder
 
 import matplotlib.pyplot as plt
 
+import datetime
+
 mnist = input_data.read_data_sets('../minist', one_hot = True)
 
 def standard_scale(X_train, X_test):
@@ -28,11 +30,13 @@ batch_size = 128
 display_step = 1
 device = '/gpu:1'
 
-autoencoder = Autoencoder(n_input = 784,
+with tf.device(device):
+    autoencoder = Autoencoder(device = device, n_input = 784,
                           n_hidden = 200,
                           transfer_function = tf.nn.softplus,
                           optimizer = tf.train.AdamOptimizer(learning_rate = 0.001))
 
+start_time = datetime.datetime.now()
 for epoch in range(training_epochs):
     avg_cost = 0.
     total_batch = int(n_samples / batch_size)
@@ -50,7 +54,10 @@ for epoch in range(training_epochs):
         print "Epoch:", '%04d' % (epoch + 1), \
             "cost=", "{:.9f}".format(avg_cost)
 
+end_time = datetime.datetime.now()
+
 print "Total cost: " + str(autoencoder.calc_total_cost(X_test))
+print "Total time: " + str(end_time - start_time)
 
 examples_to_show = 10
 # Applying encode and decode over test set
