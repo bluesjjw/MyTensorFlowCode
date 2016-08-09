@@ -56,8 +56,9 @@ for epoch in range(training_epochs):
 
 end_time = datetime.datetime.now()
 
-print "Total cost: " + str(autoencoder.calc_total_cost(X_test))
-print "Total time: " + str(end_time - start_time)
+print "Total time of training: " + str(end_time - start_time)
+print "Total cost of test set: " + str(autoencoder.calc_total_cost(X_test))
+
 
 examples_to_show = 10
 # Applying encode and decode over test set
