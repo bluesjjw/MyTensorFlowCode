@@ -1,7 +1,3 @@
-# Import MINST data
-from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("../mnist", one_hot=True)
-
 import tensorflow as tf
 import sys
 sys.path.append("..")
@@ -12,13 +8,7 @@ n_hidden_1 = 256 # 1st layer num features
 n_hidden_2 = 128 # 2nd layer num features
 n_input = 784 # MNIST data input (img shape: 28*28)
 
-model_path = "init_mlp.ckpt"
-
-# tf Graph input
-
-
-# Ctrate model
-
+model_path = "init_autoencoder.ckpt"
 
 weights = {
     'encoder_h1': tf.Variable(Utils.xavier_init(n_input, n_hidden_1)),
@@ -33,17 +23,6 @@ biases = {
     'decoder_b2': tf.Variable(tf.random_normal([n_input])),
 }
 
-# Construct model
-
-# Parameters
-learning_rate = 0.001
-training_epochs = 15
-batch_size = 100
-display_step = 1
-
-# Define loss and optimizer
-
-
 init = tf.initialize_all_variables()
 saver = tf.train.Saver({"encoder_h1": weights['encoder_h1'], 
 	"encoder_h2": weights['encoder_h2'],
@@ -56,6 +35,10 @@ saver = tf.train.Saver({"encoder_h1": weights['encoder_h1'],
 	})
 
 with tf.Session() as sess:
-	sess.run(init)
-	save_path = saver.save(sess, model_path)
-	print "Model saved in file: %s" % save_path
+    sess.run(init)
+    save_path = saver.save(sess, model_path)
+    print "Model saved in file: %s" % save_path
+    load_path = saver.restore(sess, model_path)
+    print "Model restore from file: %s" % load_path
+    print (sess.run(weights['encoder_h1']))
+    print (sess.run(biases['encoder_b1']))
