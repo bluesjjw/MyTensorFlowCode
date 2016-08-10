@@ -11,13 +11,29 @@ Links:
 """
 from __future__ import division, print_function, absolute_import
 
+import sklearn.preprocessing as prep
 import tensorflow as tf
 import numpy as np
+
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
+import datetime
 
 # Import MINST data
 from tensorflow.examples.tutorials.mnist import input_data
-mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+mnist = input_data.read_data_sets("../mnist/", one_hot=True)
+
+model_path = "init_autoencoder.ckpt"
+
+def standard_scale(X_train, X_test):
+    preprocessor = prep.StandardScaler().fit(X_train)
+    X_train = preprocessor.transform(X_train)
+    X_test = preprocessor.transform(X_test)
+    return X_train, X_test
+
+X_train, X_test = standard_scale(mnist.train.images, mnist.test.images)
 
 # Import sub-module
 import sys
@@ -25,15 +41,16 @@ sys.path.append("..")
 from utils import Utils
 
 # Parameters
-learning_rate = 0.01
-momentum = 0.1
-training_epochs = 20
+learning_rate = 0.001
+momentum = 0.9
+training_epochs = 50
 batch_size = 256
 display_step = 1
 examples_to_show = 10
 
 # Device config
-device = '/gpu:2'
+gpu = '/gpu:2'
+cpu = '/cpu:0'
 log_device_placement = True
 
 # Network Parameters
@@ -61,7 +78,7 @@ def decoder(x):
                                    biases['decoder_b2']))
     return layer_2
 
-with tf.device(device):
+with tf.device(gpu):
     # TF Graph input (only pictures)
     X = tf.placeholder("float", [None, n_input])
 
@@ -81,21 +98,19 @@ with tf.device(device):
     # Construct model
     encoder_op = encoder(X)
     decoder_op = decoder(encoder_op)
-
+    
     # Prediction
     y_pred = decoder_op
     # Targets (Labels) are the input data.
     y_true = X
     # Define loss (the squared error)
-    cost = tf.reduce_mean(tf.pow(y_true - y_pred, 2))
+    cost = tf.reduce_sum(tf.pow(tf.sub(y_true, y_pred), 2))
 
-with tf.device(device):
-     # Optimizer algorithm
+with tf.device(gpu):
+    # Optimizer algorithm
     optim_alg = tf.train.AdamOptimizer(learning_rate)
-
     # Save image
-    save_image_name = 'mnist-adam.png'
-    
+    save_image_name = 'image/mnist-adam.png'
     # Define optimizer, minimize the squared error
     optimizer = optim_alg.minimize(cost)
 
@@ -111,43 +126,53 @@ saver = tf.train.Saver({"encoder_h1": weights['encoder_h1'],
     "encoder_b2": biases['encoder_b2'],
     "decoder_b1": biases['decoder_b1'],
     "decoder_b2": biases['decoder_b2']
-    })
+})
 
 # Launch the graph
+#with tf.device(gpu):
 with tf.Session(config=tf.ConfigProto(log_device_placement=log_device_placement)) as sess:
+    #sess = tf.Session(config=tf.ConfigProto(log_device_placement=log_device_placement))
     sess.run(init)
     # Load initial weights and biases from local file
     load_path = saver.restore(sess, model_path)
-    print "Model restore from file: %s" % load_path
-    print (sess.run(weights['encoder_h1']))
-    print (sess.run(biases['encoder_b1']))
+    print("Model restore from file: %s" % load_path)
+    #print (sess.run(weights['encoder_h1']))
+    #print (sess.run(biases['encoder_b1']))
 
-    total_batch = int(mnist.train.num_examples/batch_size)
+    start_time = datetime.datetime.now()
+    
+    n_samples = int(mnist.train.num_examples)
+    total_batch = int(n_samples/batch_size)
     # Training cycle
     for epoch in range(training_epochs):
+        avg_cost = 0.
         # Loop over all batches
         for i in range(total_batch):
             batch_xs, batch_ys = mnist.train.next_batch(batch_size)
             # Run optimization op (backprop) and cost op (to get loss value)
             _, c = sess.run([optimizer, cost], feed_dict={X: batch_xs})
+            # Compute average loss
+            avg_cost += c / n_samples * batch_size
         # Display logs per epoch step
         if epoch % display_step == 0:
             print("Epoch:", '%04d' % (epoch+1),
-                  "cost=", "{:.9f}".format(c))
-
+                  "cost=", "{:.9f}".format(avg_cost))
+    end_time = datetime.datetime.now()
     print("Optimization Finished!")
+    print("Total time of training: %s" % str(end_time - start_time))
+    print("Total cost of test set: %f" % sess.run(cost, feed_dict={X: mnist.test.images}))
 
-    # Applying encode and decode over test set
-    encode_decode = sess.run(
-        y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
-    # Compare original images with their reconstructions
-    f, a = plt.subplots(2, 10, figsize=(10, 2))
-    for i in range(examples_to_show):
-        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
-        a[0][i].axis('off')
-        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
-        a[1][i].axis('off')
-    plt.savefig(save_image_name)
-    #f.show()
-    #plt.draw()
-    #plt.waitforbuttonpress()
+# Applying encode and decode over test set
+encode_decode = sess.run(y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
+# Compare original images with their reconstructions
+f, a = plt.subplots(2, 10, figsize=(10, 2))
+for i in range(examples_to_show):
+    a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
+    a[0][i].axis('off')
+    a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
+    a[1][i].axis('off')
+
+plt.savefig(save_image_name)
+#f.show()
+#plt.draw()
+#plt.waitforbuttonpress()
