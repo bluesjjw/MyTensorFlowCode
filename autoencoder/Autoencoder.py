@@ -6,9 +6,10 @@ from utils import Utils
 
 class Autoencoder(object):
 
-    def __init__(self, device, n_input, n_hidden, transfer_function=tf.nn.softplus, optimizer = tf.train.AdamOptimizer()):
+    def __init__(self, device, n_input, n_hidden, log_device_placement = True, transfer_function=tf.nn.softplus, optimizer = tf.train.AdamOptimizer()):
         self.n_input = n_input
         self.n_hidden = n_hidden
+        self.log_device_placement = log_device_placement
         self.transfer = transfer_function
         self.device = device
 
@@ -25,7 +26,7 @@ class Autoencoder(object):
         self.optimizer = optimizer.minimize(self.cost)
 
         init = tf.initialize_all_variables()
-        self.sess = tf.Session()
+        self.sess = tf.Session(config=tf.ConfigProto(log_device_placement=log_device_placement))
         self.sess.run(init)
 
 
