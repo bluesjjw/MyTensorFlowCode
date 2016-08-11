@@ -27,23 +27,25 @@ mnist = input_data.read_data_sets("../mnist/", one_hot=True)
 
 model_path = "init_autoencoder.ckpt"
 
-def standard_scale(X_train, X_test):
-    preprocessor = prep.StandardScaler().fit(X_train)
-    X_train = preprocessor.transform(X_train)
-    X_test = preprocessor.transform(X_test)
-    return X_train, X_test
-
-X_train, X_test = standard_scale(mnist.train.images, mnist.test.images)
-
 # Import sub-module
 import sys
 sys.path.append("..")
 from utils import Utils
 
+for i in range(len(sys.argv)):
+    print("第%d个参数是：%s" % (i,sys.argv[i]))
+
 # Parameters
+optimizer_name = 'sgd' # optimizer name
+if len(sys.argv) >= 2:
+    optimizer_name = sys.argv[1] 
 learning_rate = 0.001
+if len(sys.argv) >= 3:
+    learning_rate = float(sys.argv[2])
 momentum = 0.9
-training_epochs = 50
+if len(sys.argv) >= 4:
+    momentum = float(sys.argv[3])
+training_epochs = 100
 batch_size = 256
 display_step = 1
 examples_to_show = 10
@@ -60,25 +62,27 @@ n_input = 784 # MNIST data input (img shape: 28*28)
 
 # Building the encoder
 def encoder(x):
-    # Encoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
+    with tf.device(gpu):
+        # Encoder Hidden layer with sigmoid activation #1
+        layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
                                    biases['encoder_b1']))
-    # Decoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
+        # Decoder Hidden layer with sigmoid activation #2
+        layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['encoder_h2']),
                                    biases['encoder_b2']))
-    return layer_2
+        return layer_2
 
 # Building the decoder
 def decoder(x):
-    # Encoder Hidden layer with sigmoid activation #1
-    layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
+    with tf.device(gpu):
+        # Encoder Hidden layer with sigmoid activation #1
+        layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
                                    biases['decoder_b1']))
-    # Decoder Hidden layer with sigmoid activation #2
-    layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
+        # Decoder Hidden layer with sigmoid activation #2
+        layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(layer_1, weights['decoder_h2']),
                                    biases['decoder_b2']))
-    return layer_2
+        return layer_2
 
-with tf.device(gpu):
+with tf.device(cpu):
     # TF Graph input (only pictures)
     X = tf.placeholder("float", [None, n_input])
 
@@ -103,14 +107,27 @@ with tf.device(gpu):
     y_pred = decoder_op
     # Targets (Labels) are the input data.
     y_true = X
+    
+
+with tf.device(cpu):
+    # Optimizers
+    optimizers = {
+        'sgd': tf.train.GradientDescentOptimizer(learning_rate),
+        'adadelta': tf.train.AdadeltaOptimizer(learning_rate),
+        'adagrad': tf.train.AdagradOptimizer(learning_rate),
+        'momentum': tf.train.MomentumOptimizer(learning_rate, momentum = momentum),
+        'adam': tf.train.AdamOptimizer(learning_rate),
+        'ftrl': tf.train.FtrlOptimizer(learning_rate),
+        'rmsp': tf.train.RMSPropOptimizer(learning_rate, momentum = momentum),
+    }
+    
     # Define loss (the squared error)
     cost = tf.reduce_sum(tf.pow(tf.sub(y_true, y_pred), 2))
-
-with tf.device(gpu):
+    
     # Optimizer algorithm
-    optim_alg = tf.train.AdamOptimizer(learning_rate)
+    optim_alg = optimizers[optimizer_name]
     # Save image
-    save_image_name = 'image/mnist-adam.png'
+    save_image_name = 'image/mnist-' + optimizer_name + '.png'
     # Define optimizer, minimize the squared error
     optimizer = optim_alg.minimize(cost)
 
@@ -162,17 +179,17 @@ with tf.Session(config=tf.ConfigProto(log_device_placement=log_device_placement)
     print("Total time of training: %s" % str(end_time - start_time))
     print("Total cost of test set: %f" % sess.run(cost, feed_dict={X: mnist.test.images}))
 
-# Applying encode and decode over test set
-encode_decode = sess.run(y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
-# Compare original images with their reconstructions
-f, a = plt.subplots(2, 10, figsize=(10, 2))
-for i in range(examples_to_show):
-    a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
-    a[0][i].axis('off')
-    a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
-    a[1][i].axis('off')
+    # Applying encode and decode over test set
+    encode_decode = sess.run(y_pred, feed_dict={X: mnist.test.images[:examples_to_show]})
+    # Compare original images with their reconstructions
+    f, a = plt.subplots(2, 10, figsize=(10, 2))
+    for i in range(examples_to_show):
+        a[0][i].imshow(np.reshape(mnist.test.images[i], (28, 28)))
+        a[0][i].axis('off')
+        a[1][i].imshow(np.reshape(encode_decode[i], (28, 28)))
+        a[1][i].axis('off')
 
-plt.savefig(save_image_name)
-#f.show()
-#plt.draw()
-#plt.waitforbuttonpress()
+    plt.savefig(save_image_name)
+    #f.show()
+    #plt.draw()
+    #plt.waitforbuttonpress()
