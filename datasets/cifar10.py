@@ -17,7 +17,7 @@ sys.path.append("..")
 from utils.Utils import to_categorical
 
 
-def load_data(dirname="cifar-10-batches-py", one_hot=False, gray_scale=True):
+def load_data(dirname="cifar-10-batches-py", one_hot=False, gray_scale=True, flatten=False):
     tarpath = maybe_download("cifar-10-python.tar.gz",
                              "http://www.cs.toronto.edu/~kriz/",
                              dirname)
@@ -41,10 +41,14 @@ def load_data(dirname="cifar-10-batches-py", one_hot=False, gray_scale=True):
 
     X_train = np.dstack((X_train[:, :1024], X_train[:, 1024:2048],
                          X_train[:, 2048:])) / 255.
-    X_train = np.reshape(X_train, [-1, 32, 32, 3])
     X_test = np.dstack((X_test[:, :1024], X_test[:, 1024:2048],
                         X_test[:, 2048:])) / 255.
-    X_test = np.reshape(X_test, [-1, 32, 32, 3])
+    if flatten:
+        X_train = np.reshape(X_train, [-1, 3072])
+        X_test = np.reshape(X_test, [-1, 3072])
+    else:
+        X_train = np.reshape(X_train, [-1, 32, 32, 3])
+        X_test = np.reshape(X_test, [-1, 32, 32, 3])
 
     if one_hot:
         Y_train = to_categorical(Y_train, 10)

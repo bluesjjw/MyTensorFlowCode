@@ -56,7 +56,7 @@ log_device_placement = True
 # Network parameters
 n_hidden_1 = 256 # 1st layer num features
 n_hidden_2 = 128 # 2nd layer num features
-n_input = 1024 # cifear10 data input (img shape: 32*32, gray scale)
+n_input = 3072 # cifear10 data input (img shape: 32*32, gray scale)
 
 if __name__ == '__main__':
 	print('====================================')
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
 	# load cifar10 dataset
 	dataset_dir = '/home/jiawei/dataset/cifar-10/cifar-10-batches-py'
-	train_set, test_set = cifar10.load_data(dataset_dir, False, True)
+	train_set, test_set = cifar10.load_data(dataset_dir, False, False, True)
 	X_train, Y_train = train_set
 	X_test, Y_test = test_set
 	print('Train set shape: ' + str(X_train.shape))
