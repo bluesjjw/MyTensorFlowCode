@@ -37,6 +37,7 @@ def decoder(x):
 		return layer_2
 
 # initial model
+model_path = "init_cifar.ckpt"
 
 # Train parameters
 optimizer_name = 'sgd' # default optimization algorithm
