@@ -82,7 +82,7 @@ def decoder(x):
                                    biases['decoder_b2']))
         return layer_2
 
-with tf.device(cpu):
+with tf.device(gpu):
     # TF Graph input (only pictures)
     X = tf.placeholder("float", [None, n_input])
 
@@ -109,7 +109,7 @@ with tf.device(cpu):
     y_true = X
     
 
-with tf.device(cpu):
+with tf.device(gpu):
     # Optimizers
     optimizers = {
         'sgd': tf.train.GradientDescentOptimizer(learning_rate),

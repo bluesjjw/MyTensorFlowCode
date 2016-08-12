@@ -1,2 +1,2 @@
-model_checkpoint_path: "init_mnist.ckpt"
-all_model_checkpoint_paths: "init_mnist.ckpt"
+model_checkpoint_path: "init_cifar.ckpt"
+all_model_checkpoint_paths: "init_cifar.ckpt"

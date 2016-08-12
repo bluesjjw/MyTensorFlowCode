@@ -3,16 +3,16 @@ from __future__ import division, absolute_import, print_function
 import numpy as np
 import tensorflow as tf
 
-# Import sub-module
-import sys
-sys.path.append('..')
-from datasets import cifar10
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import datetime
+
+# Import sub-module
+import sys
+sys.path.append('..')
+from datasets import cifar10
 
 # Building the encoder
 def encoder(x):
@@ -43,7 +43,7 @@ model_path = "init_cifar.ckpt"
 optimizer_name = 'sgd' # default optimization algorithm
 learning_rate = 0.001
 momentum = 0.9
-training_epochs = 100
+training_epochs = 500
 batch_size = 256
 display_step = 1
 examples_to_show = 10
@@ -54,8 +54,8 @@ cpu = '/cpu:0'
 log_device_placement = True
 
 # Network parameters
-n_hidden_1 = 256 # 1st layer num features
-n_hidden_2 = 128 # 2nd layer num features
+n_hidden_1 = 1024 # 1st layer num features
+n_hidden_2 = 512 # 2nd layer num features
 n_input = 3072 # cifear10 data input (img shape: 32*32, gray scale)
 
 if __name__ == '__main__':
@@ -192,9 +192,9 @@ if __name__ == '__main__':
 		# Compare original images with their reconstructions
 		f, a = plt.subplots(2, 10, figsize=(10, 2))
 		for i in range(examples_to_show):
-			a[0][i].imshow(np.reshape(X_test[i], (32, 32)))
+			a[0][i].imshow(np.reshape(X_test[i], (32, 32, 3)))
 			a[0][i].axis('off')
-			a[1][i].imshow(np.reshape(encode_decode[i], (32, 32)))
+			a[1][i].imshow(np.reshape(encode_decode[i], (32, 32, 3)))
 			a[1][i].axis('off')
 
 		plt.savefig(save_image_name)

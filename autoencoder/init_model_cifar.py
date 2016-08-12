@@ -4,9 +4,9 @@ sys.path.append("..")
 from utils import Utils
 
 # Network Parameters
-n_hidden_1 = 256 # 1st layer num features
-n_hidden_2 = 128 # 2nd layer num features
-n_input = 1024 # cifar10 data input (img shape: 32*32)
+n_hidden_1 = 1024 # 1st layer num features
+n_hidden_2 = 512 # 2nd layer num features
+n_input = 3072 # cifar10 data input (img shape: 32*32)
 
 model_path = "init_cifar.ckpt"
 
