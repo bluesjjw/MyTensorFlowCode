@@ -25,7 +25,7 @@ import datetime
 from tensorflow.examples.tutorials.mnist import input_data
 mnist = input_data.read_data_sets("../mnist/", one_hot=True)
 
-model_path = "init_autoencoder.ckpt"
+model_path = "init_mnist.ckpt"
 
 # Import sub-module
 import sys
