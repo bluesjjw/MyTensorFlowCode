@@ -11,10 +11,13 @@ import tarfile
 import numpy as np
 import pickle
 
-from ..utils.Utils import to_categorical
+# Import sub-module
+import sys
+sys.path.append("..")
+from utils.Utils import to_categorical
 
 
-def load_data(dirname="cifar-10-batches-py", one_hot=False, grayscale=True):
+def load_data(dirname="cifar-10-batches-py", one_hot=False, gray_scale=True):
     tarpath = maybe_download("cifar-10-python.tar.gz",
                              "http://www.cs.toronto.edu/~kriz/",
                              dirname)
@@ -23,6 +26,7 @@ def load_data(dirname="cifar-10-batches-py", one_hot=False, grayscale=True):
 
     for i in range(1, 6):
         fpath = os.path.join(dirname, 'data_batch_' + str(i))
+        #print(fpath)
         data, labels = load_batch(fpath)
         if i == 1:
             X_train = data
@@ -32,6 +36,7 @@ def load_data(dirname="cifar-10-batches-py", one_hot=False, grayscale=True):
             Y_train = np.concatenate([Y_train, labels], axis=0)
 
     fpath = os.path.join(dirname, 'test_batch')
+    #print(fpath)
     X_test, Y_test = load_batch(fpath)
 
     X_train = np.dstack((X_train[:, :1024], X_train[:, 1024:2048],
@@ -44,7 +49,7 @@ def load_data(dirname="cifar-10-batches-py", one_hot=False, grayscale=True):
     if one_hot:
         Y_train = to_categorical(Y_train, 10)
         Y_test = to_categorical(Y_test, 10)
-    if grayscale:
+    if gray_scale:
         X_train = grayscale(X_train)
         X_test = grayscale(X_test)
 
@@ -99,6 +104,6 @@ def untar(fname):
     else:
         print("Not a tar.gz file: '%s '" % sys.argv[0])
 
-def grayscale(a):  
-    print a.reshape(a.shape[0], 3, 32, 32).mean(1).reshape(a.shape[0], -1)  
+def grayscale(a):
+    #print(a.reshape(a.shape[0], 3, 32, 32).mean(1).reshape(a.shape[0], -1))
     return a.reshape(a.shape[0], 3, 32, 32).mean(1).reshape(a.shape[0], -1)  
