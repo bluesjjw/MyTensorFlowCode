@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 # input data
-mnist = input_data.read_data_sets("../mnist", one_hot=True)
+mnist = input_data.read_data_sets("/home/jiawei/dataset/mnist", one_hot=True)
 
 # training hyper-parameter
 learning_rate = 0.001
