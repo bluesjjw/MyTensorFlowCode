@@ -13,6 +13,8 @@ Links:
 
 from __future__ import division, print_function, absolute_import
 
+import sys
+
 import tensorflow as tf
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
@@ -20,10 +22,50 @@ from tflearn.layers.conv import conv_2d, max_pool_2d
 from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 
+import datetime
+
+# Tensorboard
+tensorboard_verbose = 3
+log_dir = 'alexnet_logs/'
+
+# optimizers: SGD, AdaGrad, Adam, RMSProp, Momentum, Ftrl, AdaDelta
+optimizer_name = 'sgd'
+if len(sys.argv) >= 2:
+    optimizer_name = sys.argv[1]
+print('Optimizer: ' + optimizer_name)
+
+# objectives: categorical_crossentropy, binary_crossentropy, softmax_categorical_crossentropy, hinge_loss, mean_square
+loss_name = 'softmax_categorical_crossentropy'
+
+# Training parameters
+n_epoch=200 # epoch
+valid_ratio=0.1 # validation ratio
+is_shuffle=True
+is_show_metric=True
+batch_size=64 # batch size
+learning_rate = 0.001 # learning rate
+if len(sys.argv) >= 3:
+    learning_rate = float(sys.argv[2])
+    print('Learning rate: ' + str(learning_rate))
+
+# Job id
+run_id = 'alexnet_oxflowers17_' + optimizer_name + str(learning_rate)
+
+# Device
+gpu = '/gpu:0'
+cpu = '/cpu:0'
+
+# Checkpoint & snapshot
+check_path = 'model_' + optimizer_name + str(learning_rate)
+max_checkpoints = 10
+snapshot_step=200
+is_snapshot_epoch=False
+
+# Dataset
 import tflearn.datasets.oxflower17 as oxflower17
 X, Y = oxflower17.load_data(dirname='/home/jiawei/dataset/17flowers/', one_hot=True, resize_pics=(227, 227))
 
-tflearn.config.init_graph (log_device=False, soft_placement=True)
+tflearn.config.init_graph (log_device=True, soft_placement=True)
 
 # Building 'AlexNet'
 network = input_data(shape=[None, 227, 227, 3])
@@ -43,33 +85,11 @@ network = dropout(network, 0.5)
 network = fully_connected(network, 4096, activation='tanh')
 network = dropout(network, 0.5)
 network = fully_connected(network, 17, activation='softmax')
-network = regression(network, optimizer='momentum',
-                     loss='categorical_crossentropy',
-                     learning_rate=0.001)
+network = regression(network, optimizer=optimizer_name,
+                     loss=loss_name,
+                     learning_rate=learning_rate)
 
-# Job id
-run_id = 'alexnet_oxflowers17'
-
-tensorboard_verbose = 3
-
-log_dir = 'tflearn_logs/'
-
-# Device
-gpu = '/gpu:0'
-cpu = '/cpu:0'
-
-# Checkpoint
-check_path = 'model_alexnet'
-max_checkpoints = 10
-snapshot_step=200
-is_snapshot_epoch=False
-
-# Training parameters
-n_epoch=100
-valid_ratio=0.1
-is_shuffle=True
-is_show_metric=True
-batch_size=256
+start_time = datetime.datetime.now()
 
 # Training
 with tf.device(gpu):
@@ -80,3 +100,6 @@ with tf.device(gpu):
     model.fit(X, Y, n_epoch=n_epoch, validation_set=valid_ratio, shuffle=is_shuffle,
               show_metric=is_show_metric, batch_size=batch_size, snapshot_step=snapshot_step,
               snapshot_epoch=is_snapshot_epoch, run_id=run_id)
+
+end_time = datetime.datetime.now()
+print("Total time of training: %s" % str(end_time - start_time))
