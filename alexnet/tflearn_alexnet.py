@@ -13,6 +13,7 @@ Links:
 
 from __future__ import division, print_function, absolute_import
 
+import tensorflow as tf
 import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d
@@ -20,7 +21,9 @@ from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 
 import tflearn.datasets.oxflower17 as oxflower17
-X, Y = oxflower17.load_data(one_hot=True, resize_pics=(227, 227))
+X, Y = oxflower17.load_data(dirname='/home/jiawei/dataset/17flowers/', one_hot=True, resize_pics=(227, 227))
+
+tflearn.config.init_graph (log_device=False, soft_placement=True)
 
 # Building 'AlexNet'
 network = input_data(shape=[None, 227, 227, 3])
@@ -44,9 +47,36 @@ network = regression(network, optimizer='momentum',
                      loss='categorical_crossentropy',
                      learning_rate=0.001)
 
+# Job id
+run_id = 'alexnet_oxflowers17'
+
+tensorboard_verbose = 3
+
+log_dir = 'tflearn_logs/'
+
+# Device
+gpu = '/gpu:0'
+cpu = '/cpu:0'
+
+# Checkpoint
+check_path = 'model_alexnet'
+max_checkpoints = 10
+snapshot_step=200
+is_snapshot_epoch=False
+
+# Training parameters
+n_epoch=100
+valid_ratio=0.1
+is_shuffle=True
+is_show_metric=True
+batch_size=256
+
 # Training
-model = tflearn.DNN(network, checkpoint_path='model_alexnet',
-                    max_checkpoints=1, tensorboard_verbose=2)
-model.fit(X, Y, n_epoch=1000, validation_set=0.1, shuffle=True,
-          show_metric=True, batch_size=64, snapshot_step=200,
-          snapshot_epoch=False, run_id='alexnet_oxflowers17')
+with tf.device(gpu):
+    # Force all Variables to reside on the CPU.
+    # with tf.arg_ops([tflearn.variables.variable], device=cpu):
+    model = tflearn.DNN(network, checkpoint_path=check_path, max_checkpoints=max_checkpoints, 
+                        tensorboard_dir=log_dir, tensorboard_verbose=tensorboard_verbose)
+    model.fit(X, Y, n_epoch=n_epoch, validation_set=valid_ratio, shuffle=is_shuffle,
+              show_metric=is_show_metric, batch_size=batch_size, snapshot_step=snapshot_step,
+              snapshot_epoch=is_snapshot_epoch, run_id=run_id)
