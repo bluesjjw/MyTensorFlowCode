@@ -65,7 +65,7 @@ is_snapshot_epoch=False
 import tflearn.datasets.oxflower17 as oxflower17
 X, Y = oxflower17.load_data(dirname='/home/jiawei/dataset/17flowers/', one_hot=True, resize_pics=(227, 227))
 
-tflearn.config.init_graph (log_device=True, soft_placement=True)
+tflearn.config.init_graph(log_device=True, soft_placement=True)
 
 # Building 'AlexNet'
 network = input_data(shape=[None, 227, 227, 3])
