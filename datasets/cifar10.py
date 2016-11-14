@@ -18,9 +18,9 @@ from utils.Utils import to_categorical
 
 
 def load_data(dirname="cifar-10-batches-py", one_hot=False, gray_scale=True, flatten=False):
-    tarpath = maybe_download("cifar-10-python.tar.gz",
-                             "http://www.cs.toronto.edu/~kriz/",
-                             dirname)
+    #tarpath = maybe_download("cifar-10-python.tar.gz",
+    #                         "http://www.cs.toronto.edu/~kriz/",
+    #                         dirname)
     X_train = []
     Y_train = []
 

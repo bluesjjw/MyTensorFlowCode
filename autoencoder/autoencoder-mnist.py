@@ -45,7 +45,7 @@ if len(sys.argv) >= 3:
 momentum = 0.9
 if len(sys.argv) >= 4:
     momentum = float(sys.argv[3])
-training_epochs = 100
+training_epochs = 10
 batch_size = 256
 display_step = 1
 examples_to_show = 10
@@ -62,7 +62,7 @@ n_input = 784 # MNIST data input (img shape: 28*28)
 
 # Building the encoder
 def encoder(x):
-    with tf.device(gpu):
+    with tf.device(cpu):
         # Encoder Hidden layer with sigmoid activation #1
         layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['encoder_h1']),
                                    biases['encoder_b1']))
@@ -73,7 +73,7 @@ def encoder(x):
 
 # Building the decoder
 def decoder(x):
-    with tf.device(gpu):
+    with tf.device(cpu):
         # Encoder Hidden layer with sigmoid activation #1
         layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['decoder_h1']),
                                    biases['decoder_b1']))
@@ -82,7 +82,7 @@ def decoder(x):
                                    biases['decoder_b2']))
         return layer_2
 
-with tf.device(gpu):
+with tf.device(cpu):
     # TF Graph input (only pictures)
     X = tf.placeholder("float", [None, n_input])
 
@@ -109,7 +109,7 @@ with tf.device(gpu):
     y_true = X
     
 
-with tf.device(gpu):
+with tf.device(cpu):
     # Optimizers
     optimizers = {
         'sgd': tf.train.GradientDescentOptimizer(learning_rate),
