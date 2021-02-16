@@ -1,11 +1,11 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-import cifar
+#import cifar
 
 
 # input data
-mnist = input_data.read_data_sets("/Users/jiangjiawei/Dropbox/dataset/mnist", one_hot=True)
+mnist = input_data.read_data_sets("../datasets/mnist", one_hot=True)
 
 # training hyper-parameter
 learning_rate = 0.001
@@ -118,9 +118,9 @@ with tf.Session() as sess:
             # Calculate batch loss and accuracy
             acc = sess.run(accuracy, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.})
             loss = sess.run(cost, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.})
-            print "Iter " + str(step*batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss) + ", Training Accuracy= " + "{:.5f}".format(acc)
+            print("Iter " + str(step*batch_size) + ", Minibatch Loss= " + "{:.6f}".format(loss) + ", Training Accuracy= " + "{:.5f}".format(acc))
         step += 1
-    print "Optimization Finished!"
+    print("Optimization Finished!")
 
     # Calculate accuracy for 256 mnist test images
-    print "Testing Accuracy:", sess.run(accuracy, feed_dict={x: mnist.test.images[:256], y: mnist.test.labels[:256], keep_prob: 1.})
+    print("Testing Accuracy:", sess.run(accuracy, feed_dict={x: mnist.test.images[:256], y: mnist.test.labels[:256], keep_prob: 1.}))
